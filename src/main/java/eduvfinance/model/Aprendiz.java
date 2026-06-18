@@ -5,9 +5,6 @@ import java.time.LocalDate;
 import eduvfinance.util.Identificavel;
 import eduvfinance.util.Validadores;
 
-/**
- * Usuario que consome as trilhas de cursos do EduvFinance.
- */
 public class Aprendiz implements Identificavel {
 
     private int id;
@@ -15,7 +12,7 @@ public class Aprendiz implements Identificavel {
     private String email;
     private String senha;
     private LocalDate dataNascimento;
-    private String perfilInvestidor; // ex.: Conservador, Moderado, Arrojado
+    private String perfilInvestidor;
 
     public Aprendiz(String nome, String email, String senha,
                     LocalDate dataNascimento, String perfilInvestidor) {
@@ -41,7 +38,6 @@ public class Aprendiz implements Identificavel {
     public LocalDate getDataNascimento() { return dataNascimento; }
     public void setDataNascimento(LocalDate dataNascimento) { this.dataNascimento = dataNascimento; }
 
-    /** Versao formatada (DD/MM/AAAA) usada na coluna da tabela. */
     public String getDataNascimentoFormatada() { return Validadores.formatar(dataNascimento); }
 
     public String getPerfilInvestidor() { return perfilInvestidor; }

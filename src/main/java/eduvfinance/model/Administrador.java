@@ -5,9 +5,6 @@ import java.time.LocalDate;
 import eduvfinance.util.Identificavel;
 import eduvfinance.util.Validadores;
 
-/**
- * Usuario com poder de aprovar cursos e gerir a plataforma.
- */
 public class Administrador implements Identificavel {
 
     private int id;

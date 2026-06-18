@@ -5,9 +5,6 @@ import java.time.LocalDate;
 import eduvfinance.util.Identificavel;
 import eduvfinance.util.Validadores;
 
-/**
- * Especialista que cria cursos e trilhas dentro do EduvFinance.
- */
 public class Mentor implements Identificavel {
 
     private int id;

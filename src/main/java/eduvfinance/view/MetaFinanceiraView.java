@@ -20,9 +20,6 @@ import eduvfinance.util.Alertas;
 import eduvfinance.util.ValidacaoException;
 import eduvfinance.util.Validadores;
 
-/**
- * Tela CRUD de MetaFinanceira (objetivo financeiro pessoal do aprendiz).
- */
 public class MetaFinanceiraView {
 
     private final MetaFinanceiraRepository repo = new MetaFinanceiraRepository();

@@ -23,9 +23,6 @@ import eduvfinance.util.Alertas;
 import eduvfinance.util.ValidacaoException;
 import eduvfinance.util.Validadores;
 
-/**
- * Tela CRUD de Lancamento financeiro pessoal.
- */
 public class LancamentoView {
 
     private final LancamentoRepository repo = new LancamentoRepository();

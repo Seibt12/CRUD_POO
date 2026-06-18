@@ -20,9 +20,6 @@ import eduvfinance.util.Alertas;
 import eduvfinance.util.ValidacaoException;
 import eduvfinance.util.Validadores;
 
-/**
- * Tela CRUD de Avaliacao (nota e comentario de um curso).
- */
 public class AvaliacaoView {
 
     private final AvaliacaoRepository repo = new AvaliacaoRepository();

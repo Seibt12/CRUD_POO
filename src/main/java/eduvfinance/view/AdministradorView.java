@@ -20,9 +20,6 @@ import eduvfinance.util.Alertas;
 import eduvfinance.util.ValidacaoException;
 import eduvfinance.util.Validadores;
 
-/**
- * Tela CRUD de Administrador (usuario gestor da plataforma).
- */
 public class AdministradorView {
 
     private final AdministradorRepository repo = new AdministradorRepository();

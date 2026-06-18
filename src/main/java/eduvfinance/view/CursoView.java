@@ -20,9 +20,6 @@ import eduvfinance.util.Alertas;
 import eduvfinance.util.ValidacaoException;
 import eduvfinance.util.Validadores;
 
-/**
- * Tela CRUD de Curso (trilha publicada na plataforma).
- */
 public class CursoView {
 
     private final CursoRepository repo = new CursoRepository();

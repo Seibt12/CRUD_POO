@@ -22,9 +22,6 @@ import eduvfinance.util.Alertas;
 import eduvfinance.util.ValidacaoException;
 import eduvfinance.util.Validadores;
 
-/**
- * Tela CRUD de Matricula (inscricao de um aprendiz em um curso).
- */
 public class MatriculaView {
 
     private final MatriculaRepository repo = new MatriculaRepository();

@@ -5,13 +5,10 @@ import java.time.LocalDate;
 import eduvfinance.util.Identificavel;
 import eduvfinance.util.Validadores;
 
-/**
- * Avaliacao (nota + comentario) que um aprendiz deixa em um curso.
- */
 public class Avaliacao implements Identificavel {
 
     private int id;
-    private int nota; // 0 a 5
+    private int nota;
     private String comentario;
     private LocalDate data;
     private int idCurso;

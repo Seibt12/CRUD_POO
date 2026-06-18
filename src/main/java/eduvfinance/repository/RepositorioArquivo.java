@@ -12,13 +12,6 @@ import java.util.NoSuchElementException;
 
 import eduvfinance.util.Identificavel;
 
-/**
- * Repositorio generico que persiste qualquer entidade Identificavel em arquivo
- * binario (serializacao). Cada entidade tem seu proprio arquivo .dat.
- * Responsavel por gerar ids sequenciais e pelas operacoes de CRUD.
- *
- * @param <T> tipo da entidade persistida
- */
 public abstract class RepositorioArquivo<T extends Identificavel> {
 
     private final String arquivo;
@@ -30,7 +23,6 @@ public abstract class RepositorioArquivo<T extends Identificavel> {
         carregar();
     }
 
-    /** Le os registros do arquivo, se existir, e calcula o proximo id. */
     @SuppressWarnings("unchecked")
     private void carregar() {
         File f = new File(arquivo);
@@ -43,7 +35,6 @@ public abstract class RepositorioArquivo<T extends Identificavel> {
         }
     }
 
-    /** Grava a lista inteira em disco (chamado apos cada alteracao). */
     private void salvar() {
         File pai = new File(arquivo).getParentFile();
         if (pai != null) pai.mkdirs();

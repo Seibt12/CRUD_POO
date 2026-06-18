@@ -2,17 +2,13 @@ package eduvfinance.model;
 
 import eduvfinance.util.Identificavel;
 
-/**
- * Simulacao de investimento por juros compostos.
- * Calcula o montante final a partir dos aportes, taxa e periodo.
- */
 public class Simulacao implements Identificavel {
 
     private int id;
     private double aporteInicial;
     private double aporteMensal;
-    private double taxa;       // taxa mensal em % (ex.: 1.0 = 1% ao mes)
-    private int periodo;       // periodo em meses
+    private double taxa;
+    private int periodo;
     private TipoInvestimento tipo;
 
     public Simulacao(double aporteInicial, double aporteMensal, double taxa,
@@ -42,12 +38,8 @@ public class Simulacao implements Identificavel {
     public TipoInvestimento getTipo() { return tipo; }
     public void setTipo(TipoInvestimento tipo) { this.tipo = tipo; }
 
-    /**
-     * Calcula o montante final acumulado por juros compostos com aportes mensais.
-     * Regra de negocio mantida no Model (separada da tela).
-     */
     public double calcularMontante() {
-        double i = taxa / 100.0;            // taxa em fracao
+        double i = taxa / 100.0;
         double montante = aporteInicial;
         for (int mes = 0; mes < periodo; mes++) {
             montante = montante * (1 + i) + aporteMensal;

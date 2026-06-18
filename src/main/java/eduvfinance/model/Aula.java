@@ -2,9 +2,6 @@ package eduvfinance.model;
 
 import eduvfinance.util.Identificavel;
 
-/**
- * Aula que compoe um curso, com nivel de dificuldade e ordem na trilha.
- */
 public class Aula implements Identificavel {
 
     private int id;

@@ -22,9 +22,6 @@ import eduvfinance.util.Alertas;
 import eduvfinance.util.ValidacaoException;
 import eduvfinance.util.Validadores;
 
-/**
- * Tela CRUD de Pagamento (quitacao de uma matricula).
- */
 public class PagamentoView {
 
     private final PagamentoRepository repo = new PagamentoRepository();

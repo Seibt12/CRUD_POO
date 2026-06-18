@@ -21,9 +21,6 @@ import eduvfinance.util.Alertas;
 import eduvfinance.util.ValidacaoException;
 import eduvfinance.util.Validadores;
 
-/**
- * Tela CRUD de Mentor (criador de cursos).
- */
 public class MentorView {
 
     private final MentorRepository repo = new MentorRepository();

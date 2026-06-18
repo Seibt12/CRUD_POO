@@ -5,9 +5,6 @@ import java.time.LocalDate;
 import eduvfinance.util.Identificavel;
 import eduvfinance.util.Validadores;
 
-/**
- * Pagamento associado a uma matricula (idMatricula como chave simples).
- */
 public class Pagamento implements Identificavel {
 
     private int id;

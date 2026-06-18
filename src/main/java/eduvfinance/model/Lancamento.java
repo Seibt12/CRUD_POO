@@ -5,10 +5,6 @@ import java.time.LocalDate;
 import eduvfinance.util.Identificavel;
 import eduvfinance.util.Validadores;
 
-/**
- * Lancamento financeiro pessoal (receita, despesa ou transferencia),
- * associado a uma categoria (idCategoria como chave simples).
- */
 public class Lancamento implements Identificavel {
 
     private int id;

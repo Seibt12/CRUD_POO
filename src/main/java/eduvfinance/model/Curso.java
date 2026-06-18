@@ -2,9 +2,6 @@ package eduvfinance.model;
 
 import eduvfinance.util.Identificavel;
 
-/**
- * Curso/trilha publicada na plataforma, com preco e status de aprovacao.
- */
 public class Curso implements Identificavel {
 
     private int id;

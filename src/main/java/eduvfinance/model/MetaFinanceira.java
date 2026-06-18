@@ -5,16 +5,13 @@ import java.time.LocalDate;
 import eduvfinance.util.Identificavel;
 import eduvfinance.util.Validadores;
 
-/**
- * Meta financeira pessoal do aprendiz (ex.: "Reserva de emergencia").
- */
 public class MetaFinanceira implements Identificavel {
 
     private int id;
     private String nome;
     private double valorAlvo;
     private LocalDate dataAlvo;
-    private int prioridade; // 1 (baixa) a 5 (alta)
+    private int prioridade;
 
     public MetaFinanceira(String nome, double valorAlvo, LocalDate dataAlvo, int prioridade) {
         this.nome = nome;

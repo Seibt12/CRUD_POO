@@ -2,9 +2,6 @@ package eduvfinance.model;
 
 import eduvfinance.util.Identificavel;
 
-/**
- * Categoria usada para classificar lancamentos financeiros (ex.: Alimentacao).
- */
 public class Categoria implements Identificavel {
 
     private int id;

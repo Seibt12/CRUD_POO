@@ -20,9 +20,6 @@ import eduvfinance.util.Alertas;
 import eduvfinance.util.ValidacaoException;
 import eduvfinance.util.Validadores;
 
-/**
- * Tela CRUD de Aula (conteudo que compoe um curso).
- */
 public class AulaView {
 
     private final AulaRepository repo = new AulaRepository();

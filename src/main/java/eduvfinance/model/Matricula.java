@@ -5,16 +5,12 @@ import java.time.LocalDate;
 import eduvfinance.util.Identificavel;
 import eduvfinance.util.Validadores;
 
-/**
- * Inscricao de um aprendiz em um curso. Guarda os ids relacionados
- * (idAprendiz e idCurso) como chaves simples, sem banco de dados.
- */
 public class Matricula implements Identificavel {
 
     private int id;
     private LocalDate dataMatricula;
     private StatusMatricula status;
-    private int progresso; // percentual concluido (0 a 100)
+    private int progresso;
     private int idAprendiz;
     private int idCurso;
 

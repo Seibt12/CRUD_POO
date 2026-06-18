@@ -18,9 +18,6 @@ import eduvfinance.util.Alertas;
 import eduvfinance.util.ValidacaoException;
 import eduvfinance.util.Validadores;
 
-/**
- * Tela CRUD de Categoria. Toda a interface e montada por codigo (sem FXML).
- */
 public class CategoriaView {
 
     private final CategoriaRepository repo = new CategoriaRepository();
@@ -30,7 +27,6 @@ public class CategoriaView {
     private Integer idEmEdicao = null;
 
     public Parent build() {
-        // --- Formulario (Insercao/Atualizacao) ---
         GridPane form = new GridPane();
         form.setHgap(10); form.setVgap(10); form.setPadding(new Insets(15));
         campoIcone.setPromptText("ex.: carteira, casa, carro");
@@ -42,7 +38,6 @@ public class CategoriaView {
         Button excluir = new Button("Excluir selecionado");
         form.add(new HBox(10, salvar, limpar, excluir), 1, 2);
 
-        // --- Tabela (Consulta) ---
         TableColumn<Categoria, Integer> cId = new TableColumn<>("ID");
         cId.setCellValueFactory(new PropertyValueFactory<>("id"));
         TableColumn<Categoria, String> cNome = new TableColumn<>("Nome");
@@ -52,7 +47,6 @@ public class CategoriaView {
         tabela.getColumns().addAll(cId, cNome, cIcone);
         atualizarTabela();
 
-        // Selecionar linha -> carrega no formulario (para Atualizacao/Exclusao)
         tabela.getSelectionModel().selectedItemProperty().addListener((o, a, sel) -> {
             if (sel != null) {
                 idEmEdicao = sel.getId();
@@ -74,10 +68,10 @@ public class CategoriaView {
         try {
             String nome  = Validadores.texto("Nome", campoNome.getText());
             String icone = Validadores.texto("Icone", campoIcone.getText());
-            if (idEmEdicao == null) {                 // INSERCAO
+            if (idEmEdicao == null) {
                 repo.inserir(new Categoria(nome, icone));
                 Alertas.sucesso("Categoria inserida.");
-            } else {                                  // ATUALIZACAO
+            } else {
                 Categoria c = new Categoria(nome, icone);
                 c.setId(idEmEdicao);
                 repo.atualizar(c);
@@ -86,7 +80,7 @@ public class CategoriaView {
             limparFormulario();
             atualizarTabela();
         } catch (ValidacaoException ex) {
-            Alertas.erro(ex.getMessage());            // tratamento de excecao
+            Alertas.erro(ex.getMessage());
         }
     }
 

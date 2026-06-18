@@ -21,9 +21,6 @@ import eduvfinance.util.Alertas;
 import eduvfinance.util.ValidacaoException;
 import eduvfinance.util.Validadores;
 
-/**
- * Tela CRUD de Aprendiz (usuario consumidor das trilhas).
- */
 public class AprendizView {
 
     private final AprendizRepository repo = new AprendizRepository();

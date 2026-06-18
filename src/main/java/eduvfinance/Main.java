@@ -20,11 +20,6 @@ import eduvfinance.view.MetaFinanceiraView;
 import eduvfinance.view.PagamentoView;
 import eduvfinance.view.SimulacaoView;
 
-/**
- * Classe principal do EduvFinance Desktop.
- * Monta um TabPane com uma aba para cada entidade de dominio (CRUD).
- * Toda a interface e criada por codigo (sem FXML, sem SceneBuilder).
- */
 public class Main extends Application {
 
     @Override

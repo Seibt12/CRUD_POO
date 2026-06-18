@@ -20,10 +20,6 @@ import eduvfinance.util.Alertas;
 import eduvfinance.util.ValidacaoException;
 import eduvfinance.util.Validadores;
 
-/**
- * Tela CRUD de Simulacao de investimento (juros compostos).
- * Exibe uma coluna com o montante final calculado pelo Model.
- */
 public class SimulacaoView {
 
     private final SimulacaoRepository repo = new SimulacaoRepository();
