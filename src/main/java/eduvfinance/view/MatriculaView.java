@@ -6,7 +6,9 @@ import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -26,7 +28,7 @@ public class MatriculaView {
 
     private final MatriculaRepository repo = new MatriculaRepository();
     private final TableView<Matricula> tabela = new TableView<>();
-    private final TextField campoData      = new TextField();
+    private final DatePicker campoData     = new DatePicker();
     private final ComboBox<StatusMatricula> campoStatus = new ComboBox<>();
     private final TextField campoProgresso = new TextField();
     private final TextField campoIdAprendiz = new TextField();
@@ -36,8 +38,14 @@ public class MatriculaView {
     public Parent build() {
         GridPane form = new GridPane();
         form.setHgap(10); form.setVgap(10); form.setPadding(new Insets(15));
-        campoData.setPromptText("DD/MM/AAAA");
+        campoData.setConverter(Validadores.conversorData());
         campoProgresso.setPromptText("0 a 100");
+        campoProgresso.setTextFormatter(new TextFormatter<>(c ->
+            c.getControlNewText().matches("[0-9]*") ? c : null));
+        campoIdAprendiz.setTextFormatter(new TextFormatter<>(c ->
+            c.getControlNewText().matches("[0-9]*") ? c : null));
+        campoIdCurso.setTextFormatter(new TextFormatter<>(c ->
+            c.getControlNewText().matches("[0-9]*") ? c : null));
         campoStatus.getItems().addAll(StatusMatricula.values());
 
         form.addRow(0, new Label("Data matricula:"), campoData);
@@ -63,13 +71,18 @@ public class MatriculaView {
         cAp.setCellValueFactory(new PropertyValueFactory<>("idAprendiz"));
         TableColumn<Matricula, Integer> cCur = new TableColumn<>("ID Curso");
         cCur.setCellValueFactory(new PropertyValueFactory<>("idCurso"));
-        tabela.getColumns().addAll(cId, cData, cStatus, cProg, cAp, cCur);
+        tabela.getColumns().add(cId);
+        tabela.getColumns().add(cData);
+        tabela.getColumns().add(cStatus);
+        tabela.getColumns().add(cProg);
+        tabela.getColumns().add(cAp);
+        tabela.getColumns().add(cCur);
         atualizarTabela();
 
         tabela.getSelectionModel().selectedItemProperty().addListener((o, a, sel) -> {
             if (sel != null) {
                 idEmEdicao = sel.getId();
-                campoData.setText(sel.getDataMatriculaFormatada());
+                campoData.setValue(sel.getDataMatricula());
                 campoStatus.setValue(sel.getStatus());
                 campoProgresso.setText(String.valueOf(sel.getProgresso()));
                 campoIdAprendiz.setText(String.valueOf(sel.getIdAprendiz()));
@@ -88,7 +101,8 @@ public class MatriculaView {
 
     private void salvar() {
         try {
-            LocalDate data = Validadores.data("Data matricula", campoData.getText());
+            LocalDate data = campoData.getValue();
+            if (data == null) throw new ValidacaoException("Data matricula e obrigatoria.");
             if (campoStatus.getValue() == null)
                 throw new ValidacaoException("Selecione o status da matricula.");
             StatusMatricula status = campoStatus.getValue();
@@ -126,7 +140,7 @@ public class MatriculaView {
 
     private void limparFormulario() {
         idEmEdicao = null;
-        campoData.clear(); campoProgresso.clear();
+        campoData.setValue(null); campoProgresso.clear();
         campoIdAprendiz.clear(); campoIdCurso.clear();
         campoStatus.setValue(null);
         tabela.getSelectionModel().clearSelection();

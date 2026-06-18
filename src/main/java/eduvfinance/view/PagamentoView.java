@@ -6,7 +6,9 @@ import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -27,7 +29,7 @@ public class PagamentoView {
     private final PagamentoRepository repo = new PagamentoRepository();
     private final TableView<Pagamento> tabela = new TableView<>();
     private final TextField campoValor = new TextField();
-    private final TextField campoData  = new TextField();
+    private final DatePicker campoData = new DatePicker();
     private final ComboBox<MetodoPagto> campoMetodo = new ComboBox<>();
     private final TextField campoIdMatricula = new TextField();
     private Integer idEmEdicao = null;
@@ -36,7 +38,11 @@ public class PagamentoView {
         GridPane form = new GridPane();
         form.setHgap(10); form.setVgap(10); form.setPadding(new Insets(15));
         campoValor.setPromptText("ex.: 199,90");
-        campoData.setPromptText("DD/MM/AAAA");
+        campoValor.setTextFormatter(new TextFormatter<>(c ->
+            c.getControlNewText().matches("[0-9]*[,.]?[0-9]*") ? c : null));
+        campoIdMatricula.setTextFormatter(new TextFormatter<>(c ->
+            c.getControlNewText().matches("[0-9]*") ? c : null));
+        campoData.setConverter(Validadores.conversorData());
         campoMetodo.getItems().addAll(MetodoPagto.values());
 
         form.addRow(0, new Label("Valor:"),        campoValor);
@@ -59,14 +65,18 @@ public class PagamentoView {
         cMetodo.setCellValueFactory(new PropertyValueFactory<>("metodo"));
         TableColumn<Pagamento, Integer> cMat = new TableColumn<>("ID Matricula");
         cMat.setCellValueFactory(new PropertyValueFactory<>("idMatricula"));
-        tabela.getColumns().addAll(cId, cValor, cData, cMetodo, cMat);
+        tabela.getColumns().add(cId);
+        tabela.getColumns().add(cValor);
+        tabela.getColumns().add(cData);
+        tabela.getColumns().add(cMetodo);
+        tabela.getColumns().add(cMat);
         atualizarTabela();
 
         tabela.getSelectionModel().selectedItemProperty().addListener((o, a, sel) -> {
             if (sel != null) {
                 idEmEdicao = sel.getId();
                 campoValor.setText(String.valueOf(sel.getValor()));
-                campoData.setText(sel.getDataPagamentoFormatada());
+                campoData.setValue(sel.getDataPagamento());
                 campoMetodo.setValue(sel.getMetodo());
                 campoIdMatricula.setText(String.valueOf(sel.getIdMatricula()));
             }
@@ -84,7 +94,8 @@ public class PagamentoView {
     private void salvar() {
         try {
             double valor = Validadores.numeroPositivo("Valor", campoValor.getText());
-            LocalDate data = Validadores.data("Data pagto", campoData.getText());
+            LocalDate data = campoData.getValue();
+            if (data == null) throw new ValidacaoException("Data pagto e obrigatoria.");
             if (campoMetodo.getValue() == null)
                 throw new ValidacaoException("Selecione o metodo de pagamento.");
             MetodoPagto metodo = campoMetodo.getValue();
@@ -119,7 +130,7 @@ public class PagamentoView {
 
     private void limparFormulario() {
         idEmEdicao = null;
-        campoValor.clear(); campoData.clear(); campoIdMatricula.clear();
+        campoValor.clear(); campoData.setValue(null); campoIdMatricula.clear();
         campoMetodo.setValue(null);
         tabela.getSelectionModel().clearSelection();
     }

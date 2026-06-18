@@ -5,6 +5,7 @@ import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -34,6 +35,8 @@ public class AulaView {
         GridPane form = new GridPane();
         form.setHgap(10); form.setVgap(10); form.setPadding(new Insets(15));
         campoOrdem.setPromptText("ex.: 1");
+        campoOrdem.setTextFormatter(new TextFormatter<>(c ->
+            c.getControlNewText().matches("[0-9]*") ? c : null));
         campoNivel.getItems().addAll(Nivel.values());
 
         form.addRow(0, new Label("Titulo:"),   campoTitulo);
@@ -56,7 +59,11 @@ public class AulaView {
         cNivel.setCellValueFactory(new PropertyValueFactory<>("nivel"));
         TableColumn<Aula, Integer> cOrdem = new TableColumn<>("Ordem");
         cOrdem.setCellValueFactory(new PropertyValueFactory<>("ordem"));
-        tabela.getColumns().addAll(cId, cTitulo, cConteudo, cNivel, cOrdem);
+        tabela.getColumns().add(cId);
+        tabela.getColumns().add(cTitulo);
+        tabela.getColumns().add(cConteudo);
+        tabela.getColumns().add(cNivel);
+        tabela.getColumns().add(cOrdem);
         atualizarTabela();
 
         tabela.getSelectionModel().selectedItemProperty().addListener((o, a, sel) -> {

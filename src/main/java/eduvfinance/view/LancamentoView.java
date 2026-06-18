@@ -6,7 +6,9 @@ import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -29,7 +31,7 @@ public class LancamentoView {
     private final TableView<Lancamento> tabela = new TableView<>();
     private final ComboBox<TipoLancto> campoTipo = new ComboBox<>();
     private final TextField campoValor = new TextField();
-    private final TextField campoData  = new TextField();
+    private final DatePicker campoData = new DatePicker();
     private final ComboBox<Recorrencia> campoRecorrencia = new ComboBox<>();
     private final TextField campoIdCategoria = new TextField();
     private Integer idEmEdicao = null;
@@ -38,7 +40,11 @@ public class LancamentoView {
         GridPane form = new GridPane();
         form.setHgap(10); form.setVgap(10); form.setPadding(new Insets(15));
         campoValor.setPromptText("ex.: 1500,00");
-        campoData.setPromptText("DD/MM/AAAA");
+        campoValor.setTextFormatter(new TextFormatter<>(c ->
+            c.getControlNewText().matches("[0-9]*[,.]?[0-9]*") ? c : null));
+        campoIdCategoria.setTextFormatter(new TextFormatter<>(c ->
+            c.getControlNewText().matches("[0-9]*") ? c : null));
+        campoData.setConverter(Validadores.conversorData());
         campoTipo.getItems().addAll(TipoLancto.values());
         campoRecorrencia.getItems().addAll(Recorrencia.values());
 
@@ -65,7 +71,12 @@ public class LancamentoView {
         cRec.setCellValueFactory(new PropertyValueFactory<>("recorrencia"));
         TableColumn<Lancamento, Integer> cCat = new TableColumn<>("ID Categoria");
         cCat.setCellValueFactory(new PropertyValueFactory<>("idCategoria"));
-        tabela.getColumns().addAll(cId, cTipo, cValor, cData, cRec, cCat);
+        tabela.getColumns().add(cId);
+        tabela.getColumns().add(cTipo);
+        tabela.getColumns().add(cValor);
+        tabela.getColumns().add(cData);
+        tabela.getColumns().add(cRec);
+        tabela.getColumns().add(cCat);
         atualizarTabela();
 
         tabela.getSelectionModel().selectedItemProperty().addListener((o, a, sel) -> {
@@ -73,7 +84,7 @@ public class LancamentoView {
                 idEmEdicao = sel.getId();
                 campoTipo.setValue(sel.getTipo());
                 campoValor.setText(String.valueOf(sel.getValor()));
-                campoData.setText(sel.getDataFormatada());
+                campoData.setValue(sel.getData());
                 campoRecorrencia.setValue(sel.getRecorrencia());
                 campoIdCategoria.setText(String.valueOf(sel.getIdCategoria()));
             }
@@ -94,7 +105,8 @@ public class LancamentoView {
                 throw new ValidacaoException("Selecione o tipo do lancamento.");
             TipoLancto tipo = campoTipo.getValue();
             double valor = Validadores.numeroPositivo("Valor", campoValor.getText());
-            LocalDate data = Validadores.data("Data", campoData.getText());
+            LocalDate data = campoData.getValue();
+            if (data == null) throw new ValidacaoException("Data e obrigatoria.");
             if (campoRecorrencia.getValue() == null)
                 throw new ValidacaoException("Selecione a recorrencia.");
             Recorrencia rec = campoRecorrencia.getValue();
@@ -129,7 +141,7 @@ public class LancamentoView {
 
     private void limparFormulario() {
         idEmEdicao = null;
-        campoValor.clear(); campoData.clear(); campoIdCategoria.clear();
+        campoValor.clear(); campoData.setValue(null); campoIdCategoria.clear();
         campoTipo.setValue(null); campoRecorrencia.setValue(null);
         tabela.getSelectionModel().clearSelection();
     }

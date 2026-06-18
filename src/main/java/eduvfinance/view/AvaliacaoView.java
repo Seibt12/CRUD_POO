@@ -5,10 +5,12 @@ import java.time.LocalDate;
 import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -26,7 +28,7 @@ public class AvaliacaoView {
     private final TableView<Avaliacao> tabela = new TableView<>();
     private final TextField campoNota       = new TextField();
     private final TextField campoComentario = new TextField();
-    private final TextField campoData       = new TextField();
+    private final DatePicker campoData      = new DatePicker();
     private final TextField campoIdCurso    = new TextField();
     private Integer idEmEdicao = null;
 
@@ -34,7 +36,11 @@ public class AvaliacaoView {
         GridPane form = new GridPane();
         form.setHgap(10); form.setVgap(10); form.setPadding(new Insets(15));
         campoNota.setPromptText("0 a 5");
-        campoData.setPromptText("DD/MM/AAAA");
+        campoNota.setTextFormatter(new TextFormatter<>(c ->
+            c.getControlNewText().matches("[0-9]*") ? c : null));
+        campoIdCurso.setTextFormatter(new TextFormatter<>(c ->
+            c.getControlNewText().matches("[0-9]*") ? c : null));
+        campoData.setConverter(Validadores.conversorData());
 
         form.addRow(0, new Label("Nota:"),       campoNota);
         form.addRow(1, new Label("Comentario:"), campoComentario);
@@ -56,7 +62,11 @@ public class AvaliacaoView {
         cData.setCellValueFactory(new PropertyValueFactory<>("dataFormatada"));
         TableColumn<Avaliacao, Integer> cCurso = new TableColumn<>("ID Curso");
         cCurso.setCellValueFactory(new PropertyValueFactory<>("idCurso"));
-        tabela.getColumns().addAll(cId, cNota, cCom, cData, cCurso);
+        tabela.getColumns().add(cId);
+        tabela.getColumns().add(cNota);
+        tabela.getColumns().add(cCom);
+        tabela.getColumns().add(cData);
+        tabela.getColumns().add(cCurso);
         atualizarTabela();
 
         tabela.getSelectionModel().selectedItemProperty().addListener((o, a, sel) -> {
@@ -64,7 +74,7 @@ public class AvaliacaoView {
                 idEmEdicao = sel.getId();
                 campoNota.setText(String.valueOf(sel.getNota()));
                 campoComentario.setText(sel.getComentario());
-                campoData.setText(sel.getDataFormatada());
+                campoData.setValue(sel.getData());
                 campoIdCurso.setText(String.valueOf(sel.getIdCurso()));
             }
         });
@@ -83,7 +93,8 @@ public class AvaliacaoView {
             int nota = Validadores.inteiroPositivo("Nota", campoNota.getText());
             if (nota > 5) throw new ValidacaoException("Nota deve ser de 0 a 5.");
             String comentario = Validadores.texto("Comentario", campoComentario.getText());
-            LocalDate data = Validadores.data("Data", campoData.getText());
+            LocalDate data = campoData.getValue();
+            if (data == null) throw new ValidacaoException("Data e obrigatoria.");
             int idCurso = Validadores.inteiroPositivo("ID Curso", campoIdCurso.getText());
 
             if (idEmEdicao == null) {
@@ -116,7 +127,7 @@ public class AvaliacaoView {
     private void limparFormulario() {
         idEmEdicao = null;
         campoNota.clear(); campoComentario.clear();
-        campoData.clear(); campoIdCurso.clear();
+        campoData.setValue(null); campoIdCurso.clear();
         tabela.getSelectionModel().clearSelection();
     }
 }

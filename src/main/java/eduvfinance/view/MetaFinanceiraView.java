@@ -5,7 +5,9 @@ import java.time.LocalDate;
 import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -26,7 +28,7 @@ public class MetaFinanceiraView {
     private final TableView<MetaFinanceira> tabela = new TableView<>();
     private final TextField campoNome       = new TextField();
     private final TextField campoValorAlvo  = new TextField();
-    private final TextField campoDataAlvo   = new TextField();
+    private final DatePicker campoDataAlvo  = new DatePicker();
     private final TextField campoPrioridade = new TextField();
     private Integer idEmEdicao = null;
 
@@ -34,8 +36,12 @@ public class MetaFinanceiraView {
         GridPane form = new GridPane();
         form.setHgap(10); form.setVgap(10); form.setPadding(new Insets(15));
         campoValorAlvo.setPromptText("ex.: 10000,00");
-        campoDataAlvo.setPromptText("DD/MM/AAAA");
+        campoValorAlvo.setTextFormatter(new TextFormatter<>(c ->
+            c.getControlNewText().matches("[0-9]*[,.]?[0-9]*") ? c : null));
         campoPrioridade.setPromptText("1 a 5");
+        campoPrioridade.setTextFormatter(new TextFormatter<>(c ->
+            c.getControlNewText().matches("[0-9]*") ? c : null));
+        campoDataAlvo.setConverter(Validadores.conversorData());
 
         form.addRow(0, new Label("Nome:"),       campoNome);
         form.addRow(1, new Label("Valor alvo:"), campoValorAlvo);
@@ -57,7 +63,11 @@ public class MetaFinanceiraView {
         cData.setCellValueFactory(new PropertyValueFactory<>("dataAlvoFormatada"));
         TableColumn<MetaFinanceira, Integer> cPrio = new TableColumn<>("Prioridade");
         cPrio.setCellValueFactory(new PropertyValueFactory<>("prioridade"));
-        tabela.getColumns().addAll(cId, cNome, cValor, cData, cPrio);
+        tabela.getColumns().add(cId);
+        tabela.getColumns().add(cNome);
+        tabela.getColumns().add(cValor);
+        tabela.getColumns().add(cData);
+        tabela.getColumns().add(cPrio);
         atualizarTabela();
 
         tabela.getSelectionModel().selectedItemProperty().addListener((o, a, sel) -> {
@@ -65,7 +75,7 @@ public class MetaFinanceiraView {
                 idEmEdicao = sel.getId();
                 campoNome.setText(sel.getNome());
                 campoValorAlvo.setText(String.valueOf(sel.getValorAlvo()));
-                campoDataAlvo.setText(sel.getDataAlvoFormatada());
+                campoDataAlvo.setValue(sel.getDataAlvo());
                 campoPrioridade.setText(String.valueOf(sel.getPrioridade()));
             }
         });
@@ -83,7 +93,8 @@ public class MetaFinanceiraView {
         try {
             String nome = Validadores.texto("Nome", campoNome.getText());
             double valor = Validadores.numeroPositivo("Valor alvo", campoValorAlvo.getText());
-            LocalDate data = Validadores.data("Data alvo", campoDataAlvo.getText());
+            LocalDate data = campoDataAlvo.getValue();
+            if (data == null) throw new ValidacaoException("Data alvo e obrigatoria.");
             int prio = Validadores.inteiroPositivo("Prioridade", campoPrioridade.getText());
             if (prio < 1 || prio > 5) throw new ValidacaoException("Prioridade deve ser de 1 a 5.");
 
@@ -117,7 +128,7 @@ public class MetaFinanceiraView {
     private void limparFormulario() {
         idEmEdicao = null;
         campoNome.clear(); campoValorAlvo.clear();
-        campoDataAlvo.clear(); campoPrioridade.clear();
+        campoDataAlvo.setValue(null); campoPrioridade.clear();
         tabela.getSelectionModel().clearSelection();
     }
 }

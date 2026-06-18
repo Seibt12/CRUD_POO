@@ -6,6 +6,7 @@ import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -28,14 +29,14 @@ public class AprendizView {
     private final TextField campoNome   = new TextField();
     private final TextField campoEmail  = new TextField();
     private final TextField campoSenha   = new TextField();
-    private final TextField campoData    = new TextField();
+    private final DatePicker campoData   = new DatePicker();
     private final ComboBox<String> campoPerfil = new ComboBox<>();
     private Integer idEmEdicao = null;
 
     public Parent build() {
         GridPane form = new GridPane();
         form.setHgap(10); form.setVgap(10); form.setPadding(new Insets(15));
-        campoData.setPromptText("DD/MM/AAAA");
+        campoData.setConverter(Validadores.conversorData());
         campoPerfil.getItems().addAll("Conservador", "Moderado", "Arrojado");
 
         form.addRow(0, new Label("Nome:"),  campoNome);
@@ -59,7 +60,11 @@ public class AprendizView {
         cData.setCellValueFactory(new PropertyValueFactory<>("dataNascimentoFormatada"));
         TableColumn<Aprendiz, String> cPerfil = new TableColumn<>("Perfil");
         cPerfil.setCellValueFactory(new PropertyValueFactory<>("perfilInvestidor"));
-        tabela.getColumns().addAll(cId, cNome, cEmail, cData, cPerfil);
+        tabela.getColumns().add(cId);
+        tabela.getColumns().add(cNome);
+        tabela.getColumns().add(cEmail);
+        tabela.getColumns().add(cData);
+        tabela.getColumns().add(cPerfil);
         atualizarTabela();
 
         tabela.getSelectionModel().selectedItemProperty().addListener((o, a, sel) -> {
@@ -68,7 +73,7 @@ public class AprendizView {
                 campoNome.setText(sel.getNome());
                 campoEmail.setText(sel.getEmail());
                 campoSenha.setText(sel.getSenha());
-                campoData.setText(sel.getDataNascimentoFormatada());
+                campoData.setValue(sel.getDataNascimento());
                 campoPerfil.setValue(sel.getPerfilInvestidor());
             }
         });
@@ -87,7 +92,8 @@ public class AprendizView {
             String nome  = Validadores.texto("Nome", campoNome.getText());
             String email = Validadores.texto("E-mail", campoEmail.getText());
             String senha = Validadores.texto("Senha", campoSenha.getText());
-            LocalDate nasc = Validadores.data("Nascimento", campoData.getText());
+            LocalDate nasc = campoData.getValue();
+            if (nasc == null) throw new ValidacaoException("Nascimento e obrigatorio.");
             if (campoPerfil.getValue() == null)
                 throw new ValidacaoException("Selecione o perfil investidor.");
             String perfil = campoPerfil.getValue();
@@ -121,7 +127,7 @@ public class AprendizView {
 
     private void limparFormulario() {
         idEmEdicao = null;
-        campoNome.clear(); campoEmail.clear(); campoSenha.clear(); campoData.clear();
+        campoNome.clear(); campoEmail.clear(); campoSenha.clear(); campoData.setValue(null);
         campoPerfil.setValue(null);
         tabela.getSelectionModel().clearSelection();
     }

@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -27,13 +28,13 @@ public class AdministradorView {
     private final TextField campoNome  = new TextField();
     private final TextField campoEmail = new TextField();
     private final TextField campoSenha = new TextField();
-    private final TextField campoData  = new TextField();
+    private final DatePicker campoData = new DatePicker();
     private Integer idEmEdicao = null;
 
     public Parent build() {
         GridPane form = new GridPane();
         form.setHgap(10); form.setVgap(10); form.setPadding(new Insets(15));
-        campoData.setPromptText("DD/MM/AAAA");
+        campoData.setConverter(Validadores.conversorData());
 
         form.addRow(0, new Label("Nome:"),  campoNome);
         form.addRow(1, new Label("E-mail:"), campoEmail);
@@ -53,7 +54,10 @@ public class AdministradorView {
         cEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
         TableColumn<Administrador, String> cData = new TableColumn<>("Nascimento");
         cData.setCellValueFactory(new PropertyValueFactory<>("dataNascimentoFormatada"));
-        tabela.getColumns().addAll(cId, cNome, cEmail, cData);
+        tabela.getColumns().add(cId);
+        tabela.getColumns().add(cNome);
+        tabela.getColumns().add(cEmail);
+        tabela.getColumns().add(cData);
         atualizarTabela();
 
         tabela.getSelectionModel().selectedItemProperty().addListener((o, a, sel) -> {
@@ -62,7 +66,7 @@ public class AdministradorView {
                 campoNome.setText(sel.getNome());
                 campoEmail.setText(sel.getEmail());
                 campoSenha.setText(sel.getSenha());
-                campoData.setText(sel.getDataNascimentoFormatada());
+                campoData.setValue(sel.getDataNascimento());
             }
         });
 
@@ -80,7 +84,8 @@ public class AdministradorView {
             String nome  = Validadores.texto("Nome", campoNome.getText());
             String email = Validadores.texto("E-mail", campoEmail.getText());
             String senha = Validadores.texto("Senha", campoSenha.getText());
-            LocalDate nasc = Validadores.data("Nascimento", campoData.getText());
+            LocalDate nasc = campoData.getValue();
+            if (nasc == null) throw new ValidacaoException("Nascimento e obrigatorio.");
 
             if (idEmEdicao == null) {
                 repo.inserir(new Administrador(nome, email, senha, nasc));
@@ -111,7 +116,7 @@ public class AdministradorView {
 
     private void limparFormulario() {
         idEmEdicao = null;
-        campoNome.clear(); campoEmail.clear(); campoSenha.clear(); campoData.clear();
+        campoNome.clear(); campoEmail.clear(); campoSenha.clear(); campoData.setValue(null);
         tabela.getSelectionModel().clearSelection();
     }
 }

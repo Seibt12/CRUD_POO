@@ -5,6 +5,7 @@ import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -38,6 +39,14 @@ public class SimulacaoView {
         campoAporteMensal.setPromptText("ex.: 200,00");
         campoTaxa.setPromptText("% ao mes, ex.: 1,0");
         campoPeriodo.setPromptText("meses, ex.: 24");
+        campoAporteInicial.setTextFormatter(new TextFormatter<>(c ->
+            c.getControlNewText().matches("[0-9]*[,.]?[0-9]*") ? c : null));
+        campoAporteMensal.setTextFormatter(new TextFormatter<>(c ->
+            c.getControlNewText().matches("[0-9]*[,.]?[0-9]*") ? c : null));
+        campoTaxa.setTextFormatter(new TextFormatter<>(c ->
+            c.getControlNewText().matches("[0-9]*[,.]?[0-9]*") ? c : null));
+        campoPeriodo.setTextFormatter(new TextFormatter<>(c ->
+            c.getControlNewText().matches("[0-9]*") ? c : null));
         campoTipo.getItems().addAll(TipoInvestimento.values());
 
         form.addRow(0, new Label("Aporte inicial:"), campoAporteInicial);
@@ -65,7 +74,13 @@ public class SimulacaoView {
         cTipo.setCellValueFactory(new PropertyValueFactory<>("tipo"));
         TableColumn<Simulacao, String> cMontante = new TableColumn<>("Montante (R$)");
         cMontante.setCellValueFactory(new PropertyValueFactory<>("montanteFormatado"));
-        tabela.getColumns().addAll(cId, cInicial, cMensal, cTaxa, cPeriodo, cTipo, cMontante);
+        tabela.getColumns().add(cId);
+        tabela.getColumns().add(cInicial);
+        tabela.getColumns().add(cMensal);
+        tabela.getColumns().add(cTaxa);
+        tabela.getColumns().add(cPeriodo);
+        tabela.getColumns().add(cTipo);
+        tabela.getColumns().add(cMontante);
         atualizarTabela();
 
         tabela.getSelectionModel().selectedItemProperty().addListener((o, a, sel) -> {

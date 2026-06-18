@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -28,14 +29,14 @@ public class MentorView {
     private final TextField campoNome  = new TextField();
     private final TextField campoEmail = new TextField();
     private final TextField campoSenha = new TextField();
-    private final TextField campoData  = new TextField();
+    private final DatePicker campoData = new DatePicker();
     private final TextArea  campoBio   = new TextArea();
     private Integer idEmEdicao = null;
 
     public Parent build() {
         GridPane form = new GridPane();
         form.setHgap(10); form.setVgap(10); form.setPadding(new Insets(15));
-        campoData.setPromptText("DD/MM/AAAA");
+        campoData.setConverter(Validadores.conversorData());
         campoBio.setPrefRowCount(3);
 
         form.addRow(0, new Label("Nome:"),  campoNome);
@@ -59,7 +60,11 @@ public class MentorView {
         cData.setCellValueFactory(new PropertyValueFactory<>("dataNascimentoFormatada"));
         TableColumn<Mentor, String> cBio = new TableColumn<>("Biografia");
         cBio.setCellValueFactory(new PropertyValueFactory<>("biografia"));
-        tabela.getColumns().addAll(cId, cNome, cEmail, cData, cBio);
+        tabela.getColumns().add(cId);
+        tabela.getColumns().add(cNome);
+        tabela.getColumns().add(cEmail);
+        tabela.getColumns().add(cData);
+        tabela.getColumns().add(cBio);
         atualizarTabela();
 
         tabela.getSelectionModel().selectedItemProperty().addListener((o, a, sel) -> {
@@ -68,7 +73,7 @@ public class MentorView {
                 campoNome.setText(sel.getNome());
                 campoEmail.setText(sel.getEmail());
                 campoSenha.setText(sel.getSenha());
-                campoData.setText(sel.getDataNascimentoFormatada());
+                campoData.setValue(sel.getDataNascimento());
                 campoBio.setText(sel.getBiografia());
             }
         });
@@ -87,7 +92,8 @@ public class MentorView {
             String nome  = Validadores.texto("Nome", campoNome.getText());
             String email = Validadores.texto("E-mail", campoEmail.getText());
             String senha = Validadores.texto("Senha", campoSenha.getText());
-            LocalDate nasc = Validadores.data("Nascimento", campoData.getText());
+            LocalDate nasc = campoData.getValue();
+            if (nasc == null) throw new ValidacaoException("Nascimento e obrigatorio.");
             String bio   = Validadores.texto("Biografia", campoBio.getText());
 
             if (idEmEdicao == null) {
@@ -120,7 +126,7 @@ public class MentorView {
     private void limparFormulario() {
         idEmEdicao = null;
         campoNome.clear(); campoEmail.clear(); campoSenha.clear();
-        campoData.clear(); campoBio.clear();
+        campoData.setValue(null); campoBio.clear();
         tabela.getSelectionModel().clearSelection();
     }
 }

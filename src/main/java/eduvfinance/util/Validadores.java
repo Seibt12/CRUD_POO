@@ -5,6 +5,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
 
+import javafx.util.StringConverter;
+
 public final class Validadores {
 
     private Validadores() { }
@@ -47,4 +49,14 @@ public final class Validadores {
     }
 
     public static String formatar(LocalDate d) { return d == null ? "" : d.format(BR); }
+
+    public static StringConverter<LocalDate> conversorData() {
+        return new StringConverter<LocalDate>() {
+            @Override public String toString(LocalDate d) { return d == null ? "" : d.format(BR); }
+            @Override public LocalDate fromString(String s) {
+                if (s == null || s.isBlank()) return null;
+                try { return LocalDate.parse(s, BR); } catch (Exception e) { return null; }
+            }
+        };
+    }
 }
