@@ -1,0 +1,12 @@
+target/
+data/
+*.dat
+
+# Apache Maven baixado pelo wrapper (mantenha mvnw, mvnw.cmd e .mvn/wrapper)
+.mvn/apache-maven-*/
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/

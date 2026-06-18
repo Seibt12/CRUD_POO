@@ -1,0 +1,108 @@
+package eduvfinance.view;
+
+import javafx.geometry.Insets;
+import javafx.scene.Parent;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+
+import eduvfinance.model.Categoria;
+import eduvfinance.repository.CategoriaRepository;
+import eduvfinance.util.Alertas;
+import eduvfinance.util.ValidacaoException;
+import eduvfinance.util.Validadores;
+
+/**
+ * Tela CRUD de Categoria. Toda a interface e montada por codigo (sem FXML).
+ */
+public class CategoriaView {
+
+    private final CategoriaRepository repo = new CategoriaRepository();
+    private final TableView<Categoria> tabela = new TableView<>();
+    private final TextField campoNome  = new TextField();
+    private final TextField campoIcone = new TextField();
+    private Integer idEmEdicao = null;
+
+    public Parent build() {
+        // --- Formulario (Insercao/Atualizacao) ---
+        GridPane form = new GridPane();
+        form.setHgap(10); form.setVgap(10); form.setPadding(new Insets(15));
+        campoIcone.setPromptText("ex.: carteira, casa, carro");
+        form.addRow(0, new Label("Nome:"),  campoNome);
+        form.addRow(1, new Label("Icone:"), campoIcone);
+
+        Button salvar  = new Button("Salvar");
+        Button limpar  = new Button("Limpar");
+        Button excluir = new Button("Excluir selecionado");
+        form.add(new HBox(10, salvar, limpar, excluir), 1, 2);
+
+        // --- Tabela (Consulta) ---
+        TableColumn<Categoria, Integer> cId = new TableColumn<>("ID");
+        cId.setCellValueFactory(new PropertyValueFactory<>("id"));
+        TableColumn<Categoria, String> cNome = new TableColumn<>("Nome");
+        cNome.setCellValueFactory(new PropertyValueFactory<>("nome"));
+        TableColumn<Categoria, String> cIcone = new TableColumn<>("Icone");
+        cIcone.setCellValueFactory(new PropertyValueFactory<>("icone"));
+        tabela.getColumns().addAll(cId, cNome, cIcone);
+        atualizarTabela();
+
+        // Selecionar linha -> carrega no formulario (para Atualizacao/Exclusao)
+        tabela.getSelectionModel().selectedItemProperty().addListener((o, a, sel) -> {
+            if (sel != null) {
+                idEmEdicao = sel.getId();
+                campoNome.setText(sel.getNome());
+                campoIcone.setText(sel.getIcone());
+            }
+        });
+
+        salvar.setOnAction(e -> salvar());
+        limpar.setOnAction(e -> limparFormulario());
+        excluir.setOnAction(e -> excluir());
+
+        VBox root = new VBox(10, form, tabela);
+        root.setPadding(new Insets(15));
+        return root;
+    }
+
+    private void salvar() {
+        try {
+            String nome  = Validadores.texto("Nome", campoNome.getText());
+            String icone = Validadores.texto("Icone", campoIcone.getText());
+            if (idEmEdicao == null) {                 // INSERCAO
+                repo.inserir(new Categoria(nome, icone));
+                Alertas.sucesso("Categoria inserida.");
+            } else {                                  // ATUALIZACAO
+                Categoria c = new Categoria(nome, icone);
+                c.setId(idEmEdicao);
+                repo.atualizar(c);
+                Alertas.sucesso("Categoria atualizada.");
+            }
+            limparFormulario();
+            atualizarTabela();
+        } catch (ValidacaoException ex) {
+            Alertas.erro(ex.getMessage());            // tratamento de excecao
+        }
+    }
+
+    private void excluir() {
+        Categoria sel = tabela.getSelectionModel().getSelectedItem();
+        if (sel == null) { Alertas.erro("Selecione um registro na tabela."); return; }
+        repo.excluir(sel.getId());
+        Alertas.sucesso("Categoria excluida.");
+        limparFormulario();
+        atualizarTabela();
+    }
+
+    private void atualizarTabela() { tabela.getItems().setAll(repo.listar()); }
+
+    private void limparFormulario() {
+        idEmEdicao = null; campoNome.clear(); campoIcone.clear();
+        tabela.getSelectionModel().clearSelection();
+    }
+}
