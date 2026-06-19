@@ -3,6 +3,7 @@ package eduvfinance.view;
 import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -13,6 +14,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 import eduvfinance.model.Categoria;
+import eduvfinance.model.TipoLancto;
 import eduvfinance.repository.CategoriaRepository;
 import eduvfinance.util.Alertas;
 import eduvfinance.util.ValidacaoException;
@@ -22,18 +24,19 @@ public class CategoriaView {
 
     private final CategoriaRepository repo = new CategoriaRepository();
     private final TableView<Categoria> tabela = new TableView<>();
-    private final TextField campoNome      = new TextField();
-    private final TextField campoDescricao = new TextField();
-    private final TextField campoIcone     = new TextField();
+    private final TextField campoNome   = new TextField();
+    private final ComboBox<TipoLancto> campoTipoPadrao = new ComboBox<>();
+    private final TextField campoIcone  = new TextField();
     private Integer idEmEdicao = null;
 
     public Parent build() {
         GridPane form = new GridPane();
         form.setHgap(10); form.setVgap(10); form.setPadding(new Insets(15));
         campoIcone.setPromptText("ex.: carteira, casa, carro");
-        form.addRow(0, new Label("Nome:"),      campoNome);
-        form.addRow(1, new Label("Descricao:"), campoDescricao);
-        form.addRow(2, new Label("Icone:"),     campoIcone);
+        campoTipoPadrao.getItems().addAll(TipoLancto.values());
+        form.addRow(0, new Label("Nome:"),         campoNome);
+        form.addRow(1, new Label("Tipo padrao:"),  campoTipoPadrao);
+        form.addRow(2, new Label("Icone:"),        campoIcone);
 
         Button salvar  = new Button("Salvar");
         Button limpar  = new Button("Limpar");
@@ -44,13 +47,13 @@ public class CategoriaView {
         cId.setCellValueFactory(new PropertyValueFactory<>("id"));
         TableColumn<Categoria, String> cNome = new TableColumn<>("Nome");
         cNome.setCellValueFactory(new PropertyValueFactory<>("nome"));
-        TableColumn<Categoria, String> cDesc = new TableColumn<>("Descricao");
-        cDesc.setCellValueFactory(new PropertyValueFactory<>("descricao"));
+        TableColumn<Categoria, TipoLancto> cTipo = new TableColumn<>("Tipo padrao");
+        cTipo.setCellValueFactory(new PropertyValueFactory<>("tipoPadrao"));
         TableColumn<Categoria, String> cIcone = new TableColumn<>("Icone");
         cIcone.setCellValueFactory(new PropertyValueFactory<>("icone"));
         tabela.getColumns().add(cId);
         tabela.getColumns().add(cNome);
-        tabela.getColumns().add(cDesc);
+        tabela.getColumns().add(cTipo);
         tabela.getColumns().add(cIcone);
         atualizarTabela();
 
@@ -58,7 +61,7 @@ public class CategoriaView {
             if (sel != null) {
                 idEmEdicao = sel.getId();
                 campoNome.setText(sel.getNome());
-                campoDescricao.setText(sel.getDescricao());
+                campoTipoPadrao.setValue(sel.getTipoPadrao());
                 campoIcone.setText(sel.getIcone());
             }
         });
@@ -75,13 +78,15 @@ public class CategoriaView {
     private void salvar() {
         try {
             String nome  = Validadores.texto("Nome", campoNome.getText());
-            String desc  = Validadores.texto("Descricao", campoDescricao.getText());
+            if (campoTipoPadrao.getValue() == null)
+                throw new ValidacaoException("Selecione o tipo padrao.");
+            TipoLancto tipoPadrao = campoTipoPadrao.getValue();
             String icone = Validadores.texto("Icone", campoIcone.getText());
             if (idEmEdicao == null) {
-                repo.inserir(new Categoria(nome, desc, icone));
+                repo.inserir(new Categoria(nome, tipoPadrao, icone));
                 Alertas.sucesso("Categoria inserida.");
             } else {
-                Categoria c = new Categoria(nome, desc, icone);
+                Categoria c = new Categoria(nome, tipoPadrao, icone);
                 c.setId(idEmEdicao);
                 repo.atualizar(c);
                 Alertas.sucesso("Categoria atualizada.");
@@ -106,7 +111,7 @@ public class CategoriaView {
 
     private void limparFormulario() {
         idEmEdicao = null;
-        campoNome.clear(); campoDescricao.clear(); campoIcone.clear();
+        campoNome.clear(); campoTipoPadrao.setValue(null); campoIcone.clear();
         tabela.getSelectionModel().clearSelection();
     }
 }

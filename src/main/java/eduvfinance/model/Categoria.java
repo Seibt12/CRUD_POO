@@ -6,12 +6,12 @@ public class Categoria implements Identificavel {
 
     private int id;
     private String nome;
-    private String descricao;
+    private TipoLancto tipoPadrao;
     private String icone;
 
-    public Categoria(String nome, String descricao, String icone) {
+    public Categoria(String nome, TipoLancto tipoPadrao, String icone) {
         this.nome = nome;
-        this.descricao = descricao;
+        this.tipoPadrao = tipoPadrao;
         this.icone = icone;
     }
 
@@ -21,8 +21,8 @@ public class Categoria implements Identificavel {
     public String getNome() { return nome; }
     public void setNome(String nome) { this.nome = nome; }
 
-    public String getDescricao() { return descricao; }
-    public void setDescricao(String descricao) { this.descricao = descricao; }
+    public TipoLancto getTipoPadrao() { return tipoPadrao; }
+    public void setTipoPadrao(TipoLancto tipoPadrao) { this.tipoPadrao = tipoPadrao; }
 
     public String getIcone() { return icone; }
     public void setIcone(String icone) { this.icone = icone; }
