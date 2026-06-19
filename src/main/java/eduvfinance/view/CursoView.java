@@ -119,6 +119,8 @@ public class CursoView {
         atualizarTabela();
     }
 
+    public void atualizar() { atualizarTabela(); }
+
     private void atualizarTabela() { tabela.getItems().setAll(repo.listar()); }
 
     private void limparFormulario() {

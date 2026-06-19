@@ -17,8 +17,12 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
+import eduvfinance.model.Aprendiz;
+import eduvfinance.model.Curso;
 import eduvfinance.model.Matricula;
 import eduvfinance.model.StatusMatricula;
+import eduvfinance.repository.AprendizRepository;
+import eduvfinance.repository.CursoRepository;
 import eduvfinance.repository.MatriculaRepository;
 import eduvfinance.util.Alertas;
 import eduvfinance.util.ValidacaoException;
@@ -27,12 +31,14 @@ import eduvfinance.util.Validadores;
 public class MatriculaView {
 
     private final MatriculaRepository repo = new MatriculaRepository();
+    private final AprendizRepository aprendizRepo = new AprendizRepository();
+    private final CursoRepository cursoRepo = new CursoRepository();
     private final TableView<Matricula> tabela = new TableView<>();
     private final DatePicker campoData     = new DatePicker();
     private final ComboBox<StatusMatricula> campoStatus = new ComboBox<>();
     private final TextField campoProgresso = new TextField();
-    private final TextField campoIdAprendiz = new TextField();
-    private final TextField campoIdCurso   = new TextField();
+    private final ComboBox<Aprendiz> campoAprendiz = new ComboBox<>();
+    private final ComboBox<Curso> campoCurso = new ComboBox<>();
     private Integer idEmEdicao = null;
 
     public Parent build() {
@@ -42,17 +48,15 @@ public class MatriculaView {
         campoProgresso.setPromptText("0 a 100");
         campoProgresso.setTextFormatter(new TextFormatter<>(c ->
             c.getControlNewText().matches("[0-9]*") ? c : null));
-        campoIdAprendiz.setTextFormatter(new TextFormatter<>(c ->
-            c.getControlNewText().matches("[0-9]*") ? c : null));
-        campoIdCurso.setTextFormatter(new TextFormatter<>(c ->
-            c.getControlNewText().matches("[0-9]*") ? c : null));
         campoStatus.getItems().addAll(StatusMatricula.values());
+        campoAprendiz.getItems().addAll(aprendizRepo.listar());
+        campoCurso.getItems().addAll(cursoRepo.listar());
 
         form.addRow(0, new Label("Data matricula:"), campoData);
         form.addRow(1, new Label("Status:"),         campoStatus);
         form.addRow(2, new Label("Progresso (%):"),  campoProgresso);
-        form.addRow(3, new Label("ID Aprendiz:"),    campoIdAprendiz);
-        form.addRow(4, new Label("ID Curso:"),       campoIdCurso);
+        form.addRow(3, new Label("Aprendiz:"),       campoAprendiz);
+        form.addRow(4, new Label("Curso:"),          campoCurso);
 
         Button salvar  = new Button("Salvar");
         Button limpar  = new Button("Limpar");
@@ -85,8 +89,8 @@ public class MatriculaView {
                 campoData.setValue(sel.getDataMatricula());
                 campoStatus.setValue(sel.getStatus());
                 campoProgresso.setText(String.valueOf(sel.getProgresso()));
-                campoIdAprendiz.setText(String.valueOf(sel.getIdAprendiz()));
-                campoIdCurso.setText(String.valueOf(sel.getIdCurso()));
+                buscarPorId(campoAprendiz.getItems(), sel.getIdAprendiz()).ifPresent(campoAprendiz::setValue);
+                buscarPorId(campoCurso.getItems(), sel.getIdCurso()).ifPresent(campoCurso::setValue);
             }
         });
 
@@ -108,8 +112,10 @@ public class MatriculaView {
             StatusMatricula status = campoStatus.getValue();
             int progresso  = Validadores.inteiroPositivo("Progresso", campoProgresso.getText());
             if (progresso > 100) throw new ValidacaoException("Progresso deve ser de 0 a 100.");
-            int idAprendiz = Validadores.inteiroPositivo("ID Aprendiz", campoIdAprendiz.getText());
-            int idCurso    = Validadores.inteiroPositivo("ID Curso", campoIdCurso.getText());
+            if (campoAprendiz.getValue() == null) throw new ValidacaoException("Selecione o aprendiz.");
+            if (campoCurso.getValue() == null) throw new ValidacaoException("Selecione o curso.");
+            int idAprendiz = campoAprendiz.getValue().getId();
+            int idCurso    = campoCurso.getValue().getId();
 
             if (idEmEdicao == null) {
                 repo.inserir(new Matricula(data, status, progresso, idAprendiz, idCurso));
@@ -136,13 +142,32 @@ public class MatriculaView {
         atualizarTabela();
     }
 
+    public void atualizar() {
+        atualizarTabela();
+        atualizarListas();
+    }
+
     private void atualizarTabela() { tabela.getItems().setAll(repo.listar()); }
+
+    private void atualizarListas() {
+        Aprendiz aprendizSelecionado = campoAprendiz.getValue();
+        Curso cursoSelecionado = campoCurso.getValue();
+        campoAprendiz.getItems().setAll(aprendizRepo.listar());
+        campoCurso.getItems().setAll(cursoRepo.listar());
+        campoAprendiz.setValue(aprendizSelecionado);
+        campoCurso.setValue(cursoSelecionado);
+    }
 
     private void limparFormulario() {
         idEmEdicao = null;
         campoData.setValue(null); campoProgresso.clear();
-        campoIdAprendiz.clear(); campoIdCurso.clear();
+        campoAprendiz.setValue(null); campoCurso.setValue(null);
         campoStatus.setValue(null);
         tabela.getSelectionModel().clearSelection();
+    }
+
+    private <T extends eduvfinance.util.Identificavel> java.util.Optional<T> buscarPorId(
+            java.util.List<T> itens, int id) {
+        return itens.stream().filter(i -> i.getId() == id).findFirst();
     }
 }

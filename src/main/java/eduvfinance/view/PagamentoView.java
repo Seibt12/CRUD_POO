@@ -17,8 +17,10 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
+import eduvfinance.model.Matricula;
 import eduvfinance.model.MetodoPagto;
 import eduvfinance.model.Pagamento;
+import eduvfinance.repository.MatriculaRepository;
 import eduvfinance.repository.PagamentoRepository;
 import eduvfinance.util.Alertas;
 import eduvfinance.util.ValidacaoException;
@@ -27,11 +29,12 @@ import eduvfinance.util.Validadores;
 public class PagamentoView {
 
     private final PagamentoRepository repo = new PagamentoRepository();
+    private final MatriculaRepository matriculaRepo = new MatriculaRepository();
     private final TableView<Pagamento> tabela = new TableView<>();
     private final TextField campoValor = new TextField();
     private final DatePicker campoData = new DatePicker();
     private final ComboBox<MetodoPagto> campoMetodo = new ComboBox<>();
-    private final TextField campoIdMatricula = new TextField();
+    private final ComboBox<Matricula> campoMatricula = new ComboBox<>();
     private Integer idEmEdicao = null;
 
     public Parent build() {
@@ -40,15 +43,14 @@ public class PagamentoView {
         campoValor.setPromptText("ex.: 199,90");
         campoValor.setTextFormatter(new TextFormatter<>(c ->
             c.getControlNewText().matches("[0-9]*[,.]?[0-9]*") ? c : null));
-        campoIdMatricula.setTextFormatter(new TextFormatter<>(c ->
-            c.getControlNewText().matches("[0-9]*") ? c : null));
         campoData.setConverter(Validadores.conversorData());
         campoMetodo.getItems().addAll(MetodoPagto.values());
+        campoMatricula.getItems().addAll(matriculaRepo.listar());
 
         form.addRow(0, new Label("Valor:"),        campoValor);
         form.addRow(1, new Label("Data pagto:"),   campoData);
         form.addRow(2, new Label("Metodo:"),       campoMetodo);
-        form.addRow(3, new Label("ID Matricula:"), campoIdMatricula);
+        form.addRow(3, new Label("Matricula:"),    campoMatricula);
 
         Button salvar  = new Button("Salvar");
         Button limpar  = new Button("Limpar");
@@ -78,7 +80,7 @@ public class PagamentoView {
                 campoValor.setText(String.valueOf(sel.getValor()));
                 campoData.setValue(sel.getDataPagamento());
                 campoMetodo.setValue(sel.getMetodo());
-                campoIdMatricula.setText(String.valueOf(sel.getIdMatricula()));
+                buscarPorId(campoMatricula.getItems(), sel.getIdMatricula()).ifPresent(campoMatricula::setValue);
             }
         });
 
@@ -99,7 +101,8 @@ public class PagamentoView {
             if (campoMetodo.getValue() == null)
                 throw new ValidacaoException("Selecione o metodo de pagamento.");
             MetodoPagto metodo = campoMetodo.getValue();
-            int idMat = Validadores.inteiroPositivo("ID Matricula", campoIdMatricula.getText());
+            if (campoMatricula.getValue() == null) throw new ValidacaoException("Selecione a matricula.");
+            int idMat = campoMatricula.getValue().getId();
 
             if (idEmEdicao == null) {
                 repo.inserir(new Pagamento(valor, data, metodo, idMat));
@@ -126,12 +129,28 @@ public class PagamentoView {
         atualizarTabela();
     }
 
+    public void atualizar() {
+        atualizarTabela();
+        atualizarListas();
+    }
+
     private void atualizarTabela() { tabela.getItems().setAll(repo.listar()); }
+
+    private void atualizarListas() {
+        Matricula matriculaSelecionada = campoMatricula.getValue();
+        campoMatricula.getItems().setAll(matriculaRepo.listar());
+        campoMatricula.setValue(matriculaSelecionada);
+    }
 
     private void limparFormulario() {
         idEmEdicao = null;
-        campoValor.clear(); campoData.setValue(null); campoIdMatricula.clear();
+        campoValor.clear(); campoData.setValue(null); campoMatricula.setValue(null);
         campoMetodo.setValue(null);
         tabela.getSelectionModel().clearSelection();
+    }
+
+    private <T extends eduvfinance.util.Identificavel> java.util.Optional<T> buscarPorId(
+            java.util.List<T> itens, int id) {
+        return itens.stream().filter(i -> i.getId() == id).findFirst();
     }
 }

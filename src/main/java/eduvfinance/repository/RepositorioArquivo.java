@@ -45,11 +45,12 @@ public abstract class RepositorioArquivo<T extends Identificavel> {
         }
     }
 
-    public T inserir(T obj) { obj.setId(proximoId++); registros.add(obj); salvar(); return obj; }
+    public T inserir(T obj) { carregar(); obj.setId(proximoId++); registros.add(obj); salvar(); return obj; }
 
-    public List<T> listar() { return new ArrayList<>(registros); }
+    public List<T> listar() { carregar(); return new ArrayList<>(registros); }
 
     public void atualizar(T obj) {
+        carregar();
         for (int i = 0; i < registros.size(); i++) {
             if (registros.get(i).getId() == obj.getId()) { registros.set(i, obj); salvar(); return; }
         }
@@ -57,6 +58,7 @@ public abstract class RepositorioArquivo<T extends Identificavel> {
     }
 
     public void excluir(int id) {
+        carregar();
         if (!registros.removeIf(r -> r.getId() == id))
             throw new NoSuchElementException("Registro id=" + id + " nao encontrado.");
         salvar();

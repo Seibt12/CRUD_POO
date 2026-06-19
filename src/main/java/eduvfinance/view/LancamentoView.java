@@ -17,9 +17,11 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
+import eduvfinance.model.Categoria;
 import eduvfinance.model.Lancamento;
 import eduvfinance.model.Recorrencia;
 import eduvfinance.model.TipoLancto;
+import eduvfinance.repository.CategoriaRepository;
 import eduvfinance.repository.LancamentoRepository;
 import eduvfinance.util.Alertas;
 import eduvfinance.util.ValidacaoException;
@@ -28,12 +30,13 @@ import eduvfinance.util.Validadores;
 public class LancamentoView {
 
     private final LancamentoRepository repo = new LancamentoRepository();
+    private final CategoriaRepository categoriaRepo = new CategoriaRepository();
     private final TableView<Lancamento> tabela = new TableView<>();
     private final ComboBox<TipoLancto> campoTipo = new ComboBox<>();
     private final TextField campoValor = new TextField();
     private final DatePicker campoData = new DatePicker();
     private final ComboBox<Recorrencia> campoRecorrencia = new ComboBox<>();
-    private final TextField campoIdCategoria = new TextField();
+    private final ComboBox<Categoria> campoCategoria = new ComboBox<>();
     private Integer idEmEdicao = null;
 
     public Parent build() {
@@ -42,17 +45,16 @@ public class LancamentoView {
         campoValor.setPromptText("ex.: 1500,00");
         campoValor.setTextFormatter(new TextFormatter<>(c ->
             c.getControlNewText().matches("[0-9]*[,.]?[0-9]*") ? c : null));
-        campoIdCategoria.setTextFormatter(new TextFormatter<>(c ->
-            c.getControlNewText().matches("[0-9]*") ? c : null));
         campoData.setConverter(Validadores.conversorData());
         campoTipo.getItems().addAll(TipoLancto.values());
         campoRecorrencia.getItems().addAll(Recorrencia.values());
+        campoCategoria.getItems().addAll(categoriaRepo.listar());
 
         form.addRow(0, new Label("Tipo:"),        campoTipo);
         form.addRow(1, new Label("Valor:"),       campoValor);
         form.addRow(2, new Label("Data:"),        campoData);
         form.addRow(3, new Label("Recorrencia:"), campoRecorrencia);
-        form.addRow(4, new Label("ID Categoria:"), campoIdCategoria);
+        form.addRow(4, new Label("Categoria:"),   campoCategoria);
 
         Button salvar  = new Button("Salvar");
         Button limpar  = new Button("Limpar");
@@ -86,7 +88,7 @@ public class LancamentoView {
                 campoValor.setText(String.valueOf(sel.getValor()));
                 campoData.setValue(sel.getData());
                 campoRecorrencia.setValue(sel.getRecorrencia());
-                campoIdCategoria.setText(String.valueOf(sel.getIdCategoria()));
+                buscarPorId(campoCategoria.getItems(), sel.getIdCategoria()).ifPresent(campoCategoria::setValue);
             }
         });
 
@@ -110,7 +112,8 @@ public class LancamentoView {
             if (campoRecorrencia.getValue() == null)
                 throw new ValidacaoException("Selecione a recorrencia.");
             Recorrencia rec = campoRecorrencia.getValue();
-            int idCat = Validadores.inteiroPositivo("ID Categoria", campoIdCategoria.getText());
+            if (campoCategoria.getValue() == null) throw new ValidacaoException("Selecione a categoria.");
+            int idCat = campoCategoria.getValue().getId();
 
             if (idEmEdicao == null) {
                 repo.inserir(new Lancamento(tipo, valor, data, rec, idCat));
@@ -137,12 +140,28 @@ public class LancamentoView {
         atualizarTabela();
     }
 
+    public void atualizar() {
+        atualizarTabela();
+        atualizarListas();
+    }
+
     private void atualizarTabela() { tabela.getItems().setAll(repo.listar()); }
+
+    private void atualizarListas() {
+        Categoria categoriaSelecionada = campoCategoria.getValue();
+        campoCategoria.getItems().setAll(categoriaRepo.listar());
+        campoCategoria.setValue(categoriaSelecionada);
+    }
 
     private void limparFormulario() {
         idEmEdicao = null;
-        campoValor.clear(); campoData.setValue(null); campoIdCategoria.clear();
+        campoValor.clear(); campoData.setValue(null); campoCategoria.setValue(null);
         campoTipo.setValue(null); campoRecorrencia.setValue(null);
         tabela.getSelectionModel().clearSelection();
+    }
+
+    private <T extends eduvfinance.util.Identificavel> java.util.Optional<T> buscarPorId(
+            java.util.List<T> itens, int id) {
+        return itens.stream().filter(i -> i.getId() == id).findFirst();
     }
 }

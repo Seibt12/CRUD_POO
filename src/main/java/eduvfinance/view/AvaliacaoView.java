@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
@@ -17,7 +18,9 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 import eduvfinance.model.Avaliacao;
+import eduvfinance.model.Curso;
 import eduvfinance.repository.AvaliacaoRepository;
+import eduvfinance.repository.CursoRepository;
 import eduvfinance.util.Alertas;
 import eduvfinance.util.ValidacaoException;
 import eduvfinance.util.Validadores;
@@ -25,11 +28,12 @@ import eduvfinance.util.Validadores;
 public class AvaliacaoView {
 
     private final AvaliacaoRepository repo = new AvaliacaoRepository();
+    private final CursoRepository cursoRepo = new CursoRepository();
     private final TableView<Avaliacao> tabela = new TableView<>();
     private final TextField campoNota       = new TextField();
     private final TextField campoComentario = new TextField();
     private final DatePicker campoData      = new DatePicker();
-    private final TextField campoIdCurso    = new TextField();
+    private final ComboBox<Curso> campoCurso = new ComboBox<>();
     private Integer idEmEdicao = null;
 
     public Parent build() {
@@ -38,14 +42,13 @@ public class AvaliacaoView {
         campoNota.setPromptText("0 a 5");
         campoNota.setTextFormatter(new TextFormatter<>(c ->
             c.getControlNewText().matches("[0-9]*") ? c : null));
-        campoIdCurso.setTextFormatter(new TextFormatter<>(c ->
-            c.getControlNewText().matches("[0-9]*") ? c : null));
         campoData.setConverter(Validadores.conversorData());
+        campoCurso.getItems().addAll(cursoRepo.listar());
 
         form.addRow(0, new Label("Nota:"),       campoNota);
         form.addRow(1, new Label("Comentario:"), campoComentario);
         form.addRow(2, new Label("Data:"),       campoData);
-        form.addRow(3, new Label("ID Curso:"),   campoIdCurso);
+        form.addRow(3, new Label("Curso:"),      campoCurso);
 
         Button salvar  = new Button("Salvar");
         Button limpar  = new Button("Limpar");
@@ -75,7 +78,7 @@ public class AvaliacaoView {
                 campoNota.setText(String.valueOf(sel.getNota()));
                 campoComentario.setText(sel.getComentario());
                 campoData.setValue(sel.getData());
-                campoIdCurso.setText(String.valueOf(sel.getIdCurso()));
+                buscarPorId(campoCurso.getItems(), sel.getIdCurso()).ifPresent(campoCurso::setValue);
             }
         });
 
@@ -95,7 +98,8 @@ public class AvaliacaoView {
             String comentario = Validadores.texto("Comentario", campoComentario.getText());
             LocalDate data = campoData.getValue();
             if (data == null) throw new ValidacaoException("Data e obrigatoria.");
-            int idCurso = Validadores.inteiroPositivo("ID Curso", campoIdCurso.getText());
+            if (campoCurso.getValue() == null) throw new ValidacaoException("Selecione o curso.");
+            int idCurso = campoCurso.getValue().getId();
 
             if (idEmEdicao == null) {
                 repo.inserir(new Avaliacao(nota, comentario, data, idCurso));
@@ -122,12 +126,28 @@ public class AvaliacaoView {
         atualizarTabela();
     }
 
+    public void atualizar() {
+        atualizarTabela();
+        atualizarListas();
+    }
+
     private void atualizarTabela() { tabela.getItems().setAll(repo.listar()); }
+
+    private void atualizarListas() {
+        Curso cursoSelecionado = campoCurso.getValue();
+        campoCurso.getItems().setAll(cursoRepo.listar());
+        campoCurso.setValue(cursoSelecionado);
+    }
 
     private void limparFormulario() {
         idEmEdicao = null;
         campoNota.clear(); campoComentario.clear();
-        campoData.setValue(null); campoIdCurso.clear();
+        campoData.setValue(null); campoCurso.setValue(null);
         tabela.getSelectionModel().clearSelection();
+    }
+
+    private <T extends eduvfinance.util.Identificavel> java.util.Optional<T> buscarPorId(
+            java.util.List<T> itens, int id) {
+        return itens.stream().filter(i -> i.getId() == id).findFirst();
     }
 }
